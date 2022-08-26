@@ -15,11 +15,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    publishing {
+        singleVariant("release") {
+            // if you don't want sources/javadoc, remove these lines
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
 }
 
 dependencies {
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.12.54'
-    implementation 'androidx.appcompat:appcompat:1.0.0'
+    api 'com.googlecode.libphonenumber:libphonenumber:8.12.54'
+    api 'androidx.appcompat:appcompat:1.0.0'
 }
 
 ext {
@@ -40,92 +47,23 @@ afterEvaluate {
             mavenRelease(MavenPublication) {
                 from components.release
 
-                groupId = groupId
-                artifactId = "intlphoneinput"
-                version = versionId
+                groupId  groupId
+                artifactId  "intlphoneinput"
+                version  versionId
 
-                // Add your description here
-                description = "A custom view for Android that allows the user to enter his phone number in an elegant and friendly way."
-            }
-        }
-    }
-}
+                // add artifact
+                artifact "$buildDir/outputs/aar/intlphoneinput-release.aar"
 
-/*
-apply plugin: 'digital.wup.android-maven-publish'
-install {
-    repositories.mavenInstaller {
-        // This generates POM.xml with proper parameters
-        pom {
-            project {
-                packaging 'aar'
-                groupId groupId
-                artifactId "intlphoneinput"
-
-                // Add your description here
-                name "IntlPhoneInput"
-                description "A custom view for Android that allows the user to enter his phone number in an elegant and friendly way."
-                url gitProjectUrl
-
-                // Set your license
-                licenses {
-                    license {
-                        name "The Apache Software License, Version 2.0"
-                        url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                //generate pom nodes for dependencies
+                pom.withXml {
+                    def dependenciesNode = asNode().appendNode('dependencies')
+                    configurations.api.allDependencies.each { dependency ->
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', dependency.group)
+                        dependencyNode.appendNode('artifactId', dependency.name)
+                        dependencyNode.appendNode('version', dependency.version)
                     }
                 }
-                developers {
-                    developer {
-                        name "Rimoto"
-                    }
-                }
-                scm {
-                    connection gitUrl
-                    url gitProjectUrl
-                }
-            }
-        }
-    }
-}
-*/
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
-apply plugin: 'com.jfrog.bintray'
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
-    configurations = ['archives']
-    pkg {
-        repo = 'maven'
-        name = 'IntlPhoneInput'
-        userOrg = "rimoto"
-        licenses = ['Apache-2.0']
-        publish = true
-        publicDownloadNumbers = true
-        vcsUrl = gitUrl
-        version {
-            name = versionId
-            released  = new Date()
-            attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
-            gpg {
-                sign = true
             }
         }
     }
