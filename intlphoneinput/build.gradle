@@ -30,8 +30,8 @@ dependencies {
 }
 
 ext {
-    groupId = 'net.rimoto'
-    versionId = '0.0.9'
+    groupId = 'net.usamir'
+    versionId = '1.0.0'
     gitProjectUrl = "https://github.com/rimoto/IntlPhoneInput"
     gitUrl = "https://github.com/rimoto/IntlPhoneInput.git"
 }
@@ -50,7 +50,7 @@ afterEvaluate {
             mavenRelease(MavenPublication) {
                 from components.release
 
-                groupId = 'net.usamir'
+                groupId = groupId
                 artifactId = "intlphoneinput"
                 version = versionId
             }
