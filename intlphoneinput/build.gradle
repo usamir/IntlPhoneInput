@@ -31,13 +31,16 @@ dependencies {
 
 ext {
     groupId = 'net.rimoto'
-    versionId = '1.0.3'
+    versionId = '0.0.9'
     gitProjectUrl = "https://github.com/rimoto/IntlPhoneInput"
     gitUrl = "https://github.com/rimoto/IntlPhoneInput.git"
 }
 
 group = groupId  // Maven Group ID for the artifact
 version = versionId
+
+def githubProperties = new Properties()
+githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
 
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
@@ -47,22 +50,26 @@ afterEvaluate {
             mavenRelease(MavenPublication) {
                 from components.release
 
-                groupId  groupId
-                artifactId  "intlphoneinput"
-                version  versionId
+                groupId = 'net.usamir'
+                artifactId = "intlphoneinput"
+                version = versionId
+            }
+        }
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                /** Configure path of your package repository on Github
+                 ** Replace GITHUB_USERID with your/organisation Github userID
+                 ** and REPOSITORY with the repository name on GitHub
+                 */
+                url = uri("https://maven.pkg.github.com/usamir/IntlPhoneInput")
+                credentials {
+                    /** Create github.properties in root project folder file with
+                     ** gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
+                     ** Set env variable GPR_USER & GPR_API_KEY if not adding a properties file**/
 
-                // add artifact
-                artifact "$buildDir/outputs/aar/intlphoneinput-release.aar"
-
-                //generate pom nodes for dependencies
-                pom.withXml {
-                    def dependenciesNode = asNode().appendNode('dependencies')
-                    configurations.api.allDependencies.each { dependency ->
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', dependency.group)
-                        dependencyNode.appendNode('artifactId', dependency.name)
-                        dependencyNode.appendNode('version', dependency.version)
-                    }
+                    username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
+                    password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
                 }
             }
         }
